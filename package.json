@@ -1,0 +1,45 @@
+{
+  "name": "habitech-web",
+  "version": "1.0.0",
+  "description": "Sistema web con backend y frontend integrados",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "nodemon server/index.js",
+    "client:dev": "vite",
+    "build": "vite build",
+    "start": "node server/index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "postgresql",
+    "neon"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.19.0",
+    "@sendinblue/client": "^3.3.1",
+    "chart.js": "^4.5.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jspdf": "^3.0.3",
+    "jspdf-autotable": "^5.0.2",
+    "pdfkit": "^0.17.2",
+    "pg": "^8.16.3",
+    "stripe": "^19.1.0",
+    "twilio": "^5.3.4"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.1.4",
+    "prisma": "^5.19.0",
+    "vite": "^5.4.2"
+  }
+}

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Habitech</title>
+  <link rel="stylesheet" href="/src/login.css">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <img src="/logo.png" alt="Habitech Logo" class="logo">
+        <h1>HABITECH</h1>
+        <p>Gestión Inteligente, Convivencia Eficiente</p>
+      </div>
+
+      <form id="loginForm" class="login-form">
+        <div class="form-group">
+          <label for="correo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            Correo Electrónico
+          </label>
+          <input 
+            type="email" 
+            id="correo" 
+            name="correo" 
+            placeholder="usuario@ejemplo.com"
+            required 
+            autocomplete="email"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="contrasena">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Contraseña
+          </label>
+          <div class="password-input">
+            <input 
+              type="password" 
+              id="contrasena" 
+              name="contrasena" 
+              placeholder="••••••••"
+              required
+              autocomplete="current-password"
+            >
+            <button type="button" class="toggle-password" onclick="togglePassword()">
+              <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <button type="submit" class="btn-login" id="loginBtn">
+          <span id="btnText">Iniciar Sesión</span>
+          <span id="btnLoader" class="loader" style="display: none;"></span>
+        </button>
+      </form>
+
+      <div class="login-footer">
+        <p>Habitech Web System © 2025</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/login.js"></script>
+</body>
+</html>

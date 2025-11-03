@@ -1,0 +1,93 @@
+// INSTRUCCIONES: Reemplazar la función renderNotificaciones() en dashboard.js (líneas 274-323)
+// con el siguiente código:
+
+function renderNotificaciones() {
+  const content = document.getElementById('dashboard-content');
+  content.innerHTML = `
+    <div class="dashboard-header">
+      <h1>Notificaciones</h1>
+      <p>Envía notificaciones por correo a los residentes</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+      <!-- Notificación Individual -->
+      <div class="form-card">
+        <h3>📧 Notificación Individual</h3>
+        <p style="color: var(--text-light); margin-bottom: 1rem;">
+          Envía una notificación a un residente específico
+        </p>
+        <form id="notificationIndividualForm">
+          <div class="form-group">
+            <label for="residente_id">Residente</label>
+            <select id="residente_id" name="residente_id" required>
+              <option value="">Cargando residentes...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="ind_titulo">Título</label>
+            <input type="text" id="ind_titulo" name="titulo" placeholder="Título de la notificación" required>
+          </div>
+          <div class="form-group">
+            <label for="ind_tipo">Tipo de Notificación</label>
+            <select id="ind_tipo" name="tipo" required>
+              <option value="">Seleccione tipo</option>
+              <option value="pago">💰 Pago</option>
+              <option value="anuncio">📢 Anuncio</option>
+              <option value="sistema">⚙️ Sistema</option>
+              <option value="chat">💬 Chat</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="ind_mensaje">Mensaje</label>
+            <textarea id="ind_mensaje" name="mensaje" rows="4" placeholder="Escribe el mensaje de la notificación" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Enviar a Residente</button>
+        </form>
+      </div>
+
+      <!-- Notificación Masiva -->
+      <div class="form-card">
+        <h3>📢 Notificación Masiva</h3>
+        <p style="color: var(--text-light); margin-bottom: 1rem;">
+          Envía una notificación a TODOS los residentes activos
+        </p>
+        <form id="notificationMasivaForm">
+          <div class="form-group">
+            <label for="mas_titulo">Título</label>
+            <input type="text" id="mas_titulo" name="titulo" placeholder="Título de la notificación" required>
+          </div>
+          <div class="form-group">
+            <label for="mas_tipo">Tipo de Notificación</label>
+            <select id="mas_tipo" name="tipo" required>
+              <option value="">Seleccione tipo</option>
+              <option value="pago">💰 Pago</option>
+              <option value="anuncio">📢 Anuncio</option>
+              <option value="sistema">⚙️ Sistema</option>
+              <option value="chat">💬 Chat</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="mas_mensaje">Mensaje</label>
+            <textarea id="mas_mensaje" name="mensaje" rows="4" placeholder="Escribe el mensaje de la notificación" required></textarea>
+          </div>
+          <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 1rem;">
+            <strong>⚠️ Atención:</strong> Este mensaje se enviará a TODOS los residentes activos.
+          </div>
+          <button type="submit" class="btn btn-primary" style="background: #f59e0b;">Enviar a Todos</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="data-table">
+      <h3>Historial de Notificaciones Enviadas</h3>
+      <div class="data-list" id="notificacionesList">
+        <p class="loading">Cargando notificaciones...</p>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('notificationIndividualForm').addEventListener('submit', enviarNotificacionIndividual);
+  document.getElementById('notificationMasivaForm').addEventListener('submit', enviarNotificacionMasiva);
+  loadResidentesSelector();
+  loadNotificaciones();
+}

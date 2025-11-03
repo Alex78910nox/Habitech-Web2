@@ -1,0 +1,625 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model anomalias_detectadas {
+  id              Int                 @id @default(autoincrement())
+  tipo            tipo_anomalia
+  descripcion     String?
+  valor_observado Decimal?            @db.Decimal(10, 2)
+  valor_esperado  Decimal?            @db.Decimal(10, 2)
+  fecha           DateTime?           @default(now()) @db.Timestamp(6)
+  severidad       severidad_anomalia? @default(media)
+  departamento_id Int?
+}
+
+model anuncios {
+  id                Int                @id @default(autoincrement())
+  titulo            String             @db.VarChar(200)
+  contenido         String
+  tipo              tipo_anuncio
+  prioridad         prioridad_anuncio? @default(media)
+  url_imagen        String?            @db.VarChar(500)
+  fijado            Boolean?           @default(false)
+  fecha_publicacion DateTime?          @default(now()) @db.Timestamp(6)
+  fecha_expiracion  DateTime?          @db.Timestamp(6)
+  creado_por        Int
+  activo            Boolean?           @default(true)
+  contador_visitas  Int?               @default(0)
+  creado_en         DateTime?          @default(now()) @db.Timestamp(6)
+}
+
+model areas_comunes {
+  id           Int          @id @default(autoincrement())
+  nombre       String       @db.VarChar(100)
+  descripcion  String?
+  capacidad    Int?
+  estado       estado_area? @default(disponible)
+  creado_en    DateTime?    @default(now()) @db.Timestamp(6)
+  pago_por_uso Int?
+}
+
+model configuraciones_sistema {
+  id             Int       @id @default(autoincrement())
+  parametro      String    @unique @db.VarChar(100)
+  valor          String    @db.VarChar(255)
+  descripcion    String?
+  actualizado_en DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model departamentos {
+  id                    Int                  @id @default(autoincrement())
+  numero                String               @unique @db.VarChar(20)
+  piso                  Int
+  dormitorios           Int
+  banos                 Int
+  area_m2               Decimal?             @db.Decimal(8, 2)
+  renta_mensual         Decimal              @db.Decimal(10, 2)
+  mantenimiento_mensual Decimal              @db.Decimal(10, 2)
+  estado                estado_departamento? @default(disponible)
+  descripcion           String?
+  servicios             Json?
+  imagenes              Json?
+  activo                Boolean?             @default(true)
+  creado_en             DateTime?            @default(now()) @db.Timestamp(6)
+}
+
+model dispositivos_seguridad {
+  id          Int              @id @default(autoincrement())
+  tipo        tipo_dispositivo
+  ubicacion   String           @db.VarChar(200)
+  estado      estado_sensor?   @default(activo)
+  descripcion String?
+  creado_en   DateTime?        @default(now()) @db.Timestamp(6)
+}
+
+model incidentes_emergencias {
+  id             Int            @id @default(autoincrement())
+  tipo           tipo_incidente
+  descripcion    String?
+  sensor_id      Int?
+  fecha          DateTime?      @default(now()) @db.Timestamp(6)
+  registrado_por Int?
+}
+
+model items_pedido_tienda {
+  id              Int     @id @default(autoincrement())
+  pedido_id       Int
+  producto_id     Int
+  cantidad        Int
+  precio_unitario Decimal @db.Decimal(8, 2)
+  subtotal        Decimal @db.Decimal(10, 2)
+}
+
+model logs_auditoria {
+  id          Int       @id @default(autoincrement())
+  usuario_id  Int?
+  accion      String    @db.VarChar(200)
+  descripcion String?
+  fecha       DateTime? @default(now()) @db.Timestamp(6)
+  ip_origen   String?   @db.VarChar(50)
+}
+
+model mensajes_chat {
+  id              Int           @id @default(autoincrement())
+  remitente_id    Int
+  destinatario_id Int?
+  mensaje         String
+  tipo_mensaje    tipo_mensaje? @default(texto)
+  url_archivo     String?       @db.VarChar(500)
+  leido           Boolean?      @default(false)
+  leido_en        DateTime?     @db.Timestamp(6)
+  creado_en       DateTime?     @default(now()) @db.Timestamp(6)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model metricas_consumo {
+  id              Int           @default(autoincrement())
+  departamento_id Int
+  tipo_servicio   tipo_servicio
+  consumo         Decimal       @db.Decimal(10, 2)
+  fecha_registro  DateTime?     @default(now()) @db.Timestamp(6)
+
+  @@ignore
+}
+
+model nft_claim_tokens {
+  id               Int       @id @default(autoincrement())
+  token            String    @unique @db.VarChar(64)
+  residente_id     Int
+  pdf_hash         String?   @db.VarChar(128)
+  usado            Boolean?  @default(false)
+  wallet_address   String?   @db.VarChar(42)
+  nft_token_id     Int?
+  transaction_hash String?   @db.VarChar(66)
+  expires_at       DateTime  @db.Timestamp(6)
+  claimed_at       DateTime? @db.Timestamp(6)
+  created_at       DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([expires_at], map: "idx_nft_tokens_expires")
+  @@index([residente_id], map: "idx_nft_tokens_residente")
+  @@index([token], map: "idx_nft_tokens_token")
+  @@index([usado], map: "idx_nft_tokens_usado")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model notificaciones {
+  id             Int               @default(autoincrement())
+  usuario_id     Int
+  titulo         String            @db.VarChar(200)
+  mensaje        String
+  tipo           tipo_notificacion
+  id_relacionado Int?
+  icono          String?           @db.VarChar(50)
+  url_accion     String?           @db.VarChar(200)
+  leido          Boolean?          @default(false)
+  leido_en       DateTime?         @db.Timestamp(6)
+  creado_en      DateTime?         @default(now()) @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model pagos {
+  id                Int          @default(autoincrement())
+  departamento_id   Int
+  residente_id      Int
+  tipo_pago         String       @db.VarChar(255)
+  monto             Decimal      @db.Decimal(10, 2)
+  descripcion       String       @db.VarChar(500)
+  fecha_vencimiento DateTime     @db.Date
+  fecha_pago        DateTime?    @db.Date
+  metodo_pago       metodo_pago?
+  id_transaccion    String?      @db.VarChar(100)
+  estado            estado_pago? @default(pendiente)
+  recargo           Decimal?     @default(0.00) @db.Decimal(8, 2)
+  url_recibo        String?      @db.VarChar(500)
+  procesado_por     Int?
+  creado_en         DateTime?    @default(now()) @db.Timestamp(6)
+  actualizado_en    DateTime?    @default(now()) @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model patrones_comportamiento {
+  id               Int                @default(autoincrement())
+  usuario_id       Int
+  descripcion      String?
+  frecuencia       frecuencia_patron?
+  hora_habitual    DateTime?          @db.Time(6)
+  ultima_actividad DateTime?          @default(now()) @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model pedidos_tienda {
+  id                Int            @default(autoincrement())
+  residente_id      Int
+  monto_total       Decimal        @db.Decimal(10, 2)
+  estado            estado_pedido? @default(pendiente)
+  direccion_entrega String?
+  notas             String?
+  fecha_pedido      DateTime?      @default(now()) @db.Timestamp(6)
+  fecha_entrega     DateTime?      @db.Timestamp(6)
+  procesado_por     Int?
+  creado_en         DateTime?      @default(now()) @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model permisos {
+  id          Int     @default(autoincrement())
+  nombre      String  @db.VarChar(100)
+  descripcion String?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model personal_edificio {
+  id                  Int            @default(autoincrement())
+  nombre              String         @db.VarChar(100)
+  apellido            String         @db.VarChar(100)
+  cargo               cargo_personal
+  telefono            String?        @db.VarChar(20)
+  correo              String?        @db.VarChar(255)
+  documento_identidad String?        @db.VarChar(20)
+  fecha_contratacion  DateTime       @db.Date
+  salario             Decimal?       @db.Decimal(10, 2)
+  usuario_id          Int?
+  activo              Boolean?       @default(true)
+  creado_en           DateTime?      @default(now()) @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model predicciones_sistema {
+  id               Int             @default(autoincrement())
+  tipo             tipo_prediccion
+  descripcion      String?
+  valor_estimado   Decimal?        @db.Decimal(10, 2)
+  fecha_prediccion DateTime?       @default(now()) @db.Timestamp(6)
+  generado_por     String?         @default("modelo_ml") @db.VarChar(100)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model productos_tienda {
+  id             Int       @default(autoincrement())
+  nombre         String    @db.VarChar(200)
+  descripcion    String?
+  categoria      String    @db.VarChar(100)
+  precio         Decimal   @db.Decimal(8, 2)
+  cantidad_stock Int
+  unidad         String    @db.VarChar(20)
+  url_imagen     String?   @db.VarChar(500)
+  disponible     Boolean?  @default(true)
+  creado_por     Int
+  creado_en      DateTime? @default(now()) @db.Timestamp(6)
+  actualizado_en DateTime? @default(now()) @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model registros_acceso {
+  id             Int         @default(autoincrement())
+  usuario_id     Int?
+  dispositivo_id Int?
+  tipo           tipo_acceso
+  fecha_hora     DateTime?   @default(now()) @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model reglas_automatizacion {
+  id        Int       @default(autoincrement())
+  nombre    String    @db.VarChar(200)
+  condicion String
+  accion    String
+  activo    Boolean?  @default(true)
+  creado_en DateTime? @default(now()) @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model reservas_areas {
+  id            Int             @default(autoincrement())
+  area_id       Int
+  residente_id  Int
+  fecha_reserva DateTime        @db.Date
+  hora_inicio   DateTime        @db.Time(6)
+  hora_fin      DateTime        @db.Time(6)
+  estado        estado_reserva? @default(pendiente)
+  monto_pago    Decimal?        @default(0.00) @db.Decimal(10, 2)
+  creado_en     DateTime?       @default(now()) @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model residentes {
+  id                           Int           @default(autoincrement())
+  usuario_id                   Int
+  departamento_id              Int
+  tipo_relacion                tipo_relacion
+  fecha_ingreso                DateTime      @db.Date
+  fecha_salida                 DateTime?     @db.Date
+  nombre_contacto_emergencia   String?       @db.VarChar(200)
+  telefono_contacto_emergencia String?       @db.VarChar(20)
+  es_principal                 Boolean?      @default(false)
+  activo                       Boolean?      @default(true)
+  creado_en                    DateTime?     @default(now()) @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model rol_permisos {
+  rol_id     Int
+  permiso_id Int
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model roles {
+  id          Int     @default(autoincrement())
+  nombre      String  @db.VarChar(50)
+  descripcion String?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model sensores_iot {
+  id              Int            @default(autoincrement())
+  tipo            tipo_sensor
+  ubicacion       String         @db.VarChar(200)
+  estado          estado_sensor? @default(activo)
+  ultimo_registro DateTime?      @db.Timestamp(6)
+  creado_en       DateTime?      @default(now()) @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model sesiones_usuario {
+  id           Int       @default(autoincrement())
+  usuario_id   Int
+  token        String    @db.VarChar(255)
+  fecha_inicio DateTime? @default(now()) @db.Timestamp(6)
+  fecha_fin    DateTime? @db.Timestamp(6)
+  activo       Boolean?  @default(true)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model solicitudes_mantenimiento {
+  id               Int                   @id @default(autoincrement()) @map("id")
+  departamento_id  Int                   @map("departamento_id")
+  descripcion      String                @map("descripcion")
+  estado           estado_mantenimiento? @default(pendiente) @map("estado")
+  creado_por       Int                   @map("creado_por")
+  asignado_a       Int?                  @map("asignado_a")
+  fecha_creacion   DateTime?             @default(now()) @db.Timestamp(6) @map("fecha_creacion")
+  fecha_resolucion DateTime?             @db.Timestamp(6) @map("fecha_resolucion")
+  fecha_programada DateTime?             @db.Date @map("fecha_programada")
+  hora_programada  DateTime?             @db.Time(6) @map("hora_programada")
+
+  @@map("solicitudes_mantenimiento")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model solicitudes_renta {
+  id                    Int               @default(autoincrement())
+  departamento_id       Int
+  nombre_solicitante    String            @db.VarChar(200)
+  correo_solicitante    String            @db.VarChar(255)
+  telefono_solicitante  String            @db.VarChar(20)
+  documento_solicitante String            @db.VarChar(20)
+  ingreso_mensual       Decimal           @db.Decimal(10, 2)
+  ocupacion             String            @db.VarChar(200)
+  tamano_familia        Int
+  mascotas              Boolean?          @default(false)
+  detalles_mascotas     String?
+  referencias           Json?
+  documentos            Json?
+  mensaje               String?
+  estado                estado_solicitud? @default(pendiente)
+  notas_admin           String?
+  procesado_por         Int?
+  procesado_en          DateTime?         @db.Timestamp(6)
+  creado_en             DateTime?         @default(now()) @db.Timestamp(6)
+
+  @@ignore
+}
+
+model stripe_transac {
+  id                       Int       @id @default(autoincrement())
+  pago_id                  Int
+  stripe_payment_intent_id String    @db.VarChar(255)
+  stripe_customer_id       String?   @db.VarChar(255)
+  amount                   Int
+  created_at               DateTime? @default(now()) @db.Timestamp(6)
+  updated_at               DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model tokens_qr {
+  id          Int       @id @default(autoincrement())
+  usuario_id  Int       @unique
+  token       String
+  generado_en DateTime? @default(now()) @db.Timestamp(6)
+  activo      Boolean?  @default(true)
+}
+
+model usuarios {
+  id                    Int       @default(autoincrement())
+  correo                String    @unique(map: "idx_correo") @db.VarChar(255)
+  hash_contrasena       String    @db.VarChar(255)
+  nombre                String    @db.VarChar(100)
+  apellido              String    @db.VarChar(100)
+  telefono              String?   @db.VarChar(20)
+  numero_documento      String    @unique(map: "idx_numero_documento") @db.VarChar(20)
+  imagen_perfil         String?   @db.VarChar(500)
+  rol_id                Int?
+  activo                Boolean?  @default(true)
+  creado_en             DateTime? @default(now()) @db.Timestamp(6)
+  actualizado_en        DateTime? @default(now()) @db.Timestamp(6)
+  reset_token           String?   @db.VarChar(255)
+  reset_token_expira    DateTime? @db.Timestamp(6)
+  codigo_verif_correo   String?
+  codigo_verif_telefono String?
+  }
+
+  model nominas {
+    id            Int      @id @default(autoincrement())
+    personal_id   Int
+    mes           Int
+    anio          Int
+    salario_base  Decimal  @db.Decimal(10,2)
+    bonos         Decimal  @db.Decimal(10,2) @default(0)
+    deducciones   Decimal  @db.Decimal(10,2) @default(0)
+    observaciones String?  @db.VarChar(500)
+    total_pagar   Decimal  @db.Decimal(10,2)
+    estado        String   @db.VarChar(50) @default("pendiente")
+    creado_en     DateTime @default(now()) @db.Timestamp(6)
+  }
+
+enum cargo_personal {
+  seguridad
+  limpieza
+  mantenimiento
+  administracion
+}
+
+enum estado_area {
+  disponible
+  ocupado
+  mantenimiento
+}
+
+enum estado_departamento {
+  disponible
+  ocupado
+  mantenimiento
+}
+
+enum estado_mantenimiento {
+  pendiente
+  en_proceso
+  resuelto
+  cancelado
+}
+
+enum estado_pago {
+  pendiente
+  pagado
+  atrasado
+  cancelado
+}
+
+enum estado_pedido {
+  pendiente
+  confirmado
+  entregado
+  cancelado
+}
+
+enum estado_reserva {
+  pendiente
+  confirmada
+  cancelada
+}
+
+enum estado_sensor {
+  activo
+  inactivo
+  fallo
+}
+
+enum estado_solicitud {
+  pendiente
+  aprobado
+  rechazado
+  retirado
+}
+
+enum frecuencia_patron {
+  diaria
+  semanal
+  mensual
+}
+
+enum metodo_pago {
+  efectivo
+  transferencia
+  tarjeta
+  online
+}
+
+enum prioridad_anuncio {
+  baja
+  media
+  alta
+  urgente
+}
+
+enum severidad_anomalia {
+  baja
+  media
+  alta
+}
+
+enum tipo_acceso {
+  entrada
+  salida
+}
+
+enum tipo_anomalia {
+  acceso
+  consumo
+  iot
+  seguridad
+}
+
+enum tipo_anuncio {
+  general
+  mantenimiento
+  emergencia
+  evento
+}
+
+enum tipo_dispositivo {
+  cctv
+  control_acceso
+  alarma
+}
+
+enum tipo_incidente {
+  incendio
+  fuga_gas
+  intrusion
+  falla_electrica
+  otro
+}
+
+enum tipo_mensaje {
+  texto
+  imagen
+  archivo
+}
+
+enum tipo_notificacion {
+  pago
+  anuncio
+  sistema
+  chat
+}
+
+enum tipo_pago {
+  renta
+  mantenimiento
+  multa
+  deposito
+}
+
+enum tipo_prediccion {
+  consumo
+  mantenimiento
+  seguridad
+  otro
+}
+
+enum tipo_relacion {
+  propietario
+  inquilino
+  familiar
+}
+
+enum tipo_sensor {
+  agua
+  luz
+  gas
+  humo
+  movimiento
+}
+
+enum tipo_servicio {
+  agua
+  luz
+  gas
+}
