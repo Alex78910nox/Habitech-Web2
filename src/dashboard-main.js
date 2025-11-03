@@ -12,6 +12,7 @@ import { renderReservas, cancelarReserva, confirmarReserva, eliminarReserva } fr
 import { renderGestionFinanciera, generarReporte } from './modules/gestion-financiera.js';
 import { renderConfiguracion } from './modules/configuracion.js';
 import { renderMetricasConsumo } from './modules/metricas-consumo.js';
+import { renderRegistrosAcceso } from './modules/registros-acceso.js';
 import { sendEmailVerification, sendSmsVerification, sendSmsVerificationResidente } from './modules/verificacion.js';
 
 // Exponer funciones globales necesarias para onclick en HTML
@@ -61,6 +62,9 @@ function setupNavigation() {
           break;
         case 'configuracion':
           renderMetricasConsumo();
+          break;
+        case 'registros-acceso':
+          renderRegistrosAcceso();
           break;
          case 'solicitudes-mantenimiento':
            moduloSolicitudesMantenimiento.render(document.getElementById('dashboard-content'));
