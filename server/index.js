@@ -2,6 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Obtener __dirname en ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Cargar variables de entorno PRIMERO
 dotenv.config();
@@ -32,7 +38,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Servir archivos estáticos del frontend
-app.use(express.static('dist'));
+const distPath = path.join(__dirname, '..', 'dist');
+app.use(express.static(distPath));
 
 // Rutas API
 app.use('/api/auth', authRoutes);
@@ -67,7 +74,7 @@ app.get('/api/db-test', async (req, res) => {
 
 // Servir el frontend para cualquier ruta que no sea /api/*
 app.get('*', (req, res) => {
-  res.sendFile('index.html', { root: 'dist' });
+  res.sendFile(path.join(distPath, 'index.html'));
 });
 
 // Iniciar servidor
