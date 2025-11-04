@@ -28,6 +28,7 @@ import estadisticasRoutes from './routes/estadisticas.js';
 import metricasConsumoRoutes from './routes/metricas-consumo.js';
 import anomaliasDetectadasRoutes from './routes/anomalias-detectadas.js';
 import registrosAccesoRoutes from './routes/registros-acceso.js';
+import chatbotRoutes from './routes/chatbot.js';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -58,6 +59,7 @@ app.use('/api/estadisticas', estadisticasRoutes);
 app.use('/api/metricas-consumo', metricasConsumoRoutes);
 app.use('/api/anomalias-detectadas', anomaliasDetectadasRoutes);
 app.use('/api/registros-acceso', registrosAccesoRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 // Ruta de prueba
 app.get('/api/health', (req, res) => {

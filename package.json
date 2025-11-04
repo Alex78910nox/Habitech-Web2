@@ -31,6 +31,7 @@
     "express": "^4.19.2",
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
+    "node-fetch": "^3.3.2",
     "pdfkit": "^0.17.2",
     "pg": "^8.16.3",
     "stripe": "^19.1.0",

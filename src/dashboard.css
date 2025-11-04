@@ -40,13 +40,14 @@ body {
   flex-direction: column;
   position: fixed;
   height: 100vh;
-  overflow-y: auto;
+  overflow: hidden; /* Cambiado para controlar mejor el scroll */
 }
 
 .sidebar-header {
   padding: 2rem 1.5rem;
   text-align: center;
   border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0; /* No se comprime */
 }
 
 .sidebar-logo {
@@ -63,6 +64,26 @@ body {
 .sidebar-nav {
   flex: 1;
   padding: 1rem 0;
+  overflow-y: auto; /* Solo el nav tiene scroll */
+  overflow-x: hidden;
+}
+
+/* Estilos personalizados para el scrollbar */
+.sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
 }
 
 .nav-item {
@@ -103,6 +124,8 @@ body {
 .sidebar-footer {
   padding: 1rem;
   border-top: 1px solid var(--border-color);
+  flex-shrink: 0; /* No se comprime */
+  background: var(--bg-dark); /* Fondo fijo */
 }
 
 .logout-btn {
@@ -112,6 +135,26 @@ body {
 .logout-btn:hover {
   background: rgba(239, 68, 68, 0.1);
   border-left-color: var(--danger-color);
+}
+
+/* Perfil en sidebar */
+.perfil-sidebar {
+  padding: 1rem;
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0; /* No se comprime */
+  background: var(--bg-dark);
+}
+
+.perfil-card {
+  background: var(--card-bg);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.perfil-card h3 {
+  font-size: 0.875rem;
+  color: var(--text-light);
+  margin-bottom: 0.5rem;
 }
 
 .perfil-sidebar {
