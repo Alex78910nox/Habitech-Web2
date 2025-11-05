@@ -21,6 +21,11 @@ router.get('/pagos-mantenimiento', async (req, res) => {
     const mesActual = mes ? parseInt(mes) : fecha.getMonth() + 1;
     const anioActual = anio ? parseInt(anio) : fecha.getFullYear();
 
+    // Crear fechas de inicio y fin del mes
+    const fechaInicio = `${anioActual}-${mesActual.toString().padStart(2, '0')}-01`;
+    const ultimoDia = new Date(anioActual, mesActual, 0).getDate();
+    const fechaFin = `${anioActual}-${mesActual.toString().padStart(2, '0')}-${ultimoDia}`;
+
     // Consulta para obtener todos los pagos de mantenimiento del mes
     const pagos = await prisma.$queryRaw(
       Prisma.sql`
@@ -51,8 +56,8 @@ router.get('/pagos-mantenimiento', async (req, res) => {
         JOIN residentes r ON p.residente_id = r.id
         JOIN usuarios u ON r.usuario_id = u.id
         WHERE p.tipo_pago = 'mantenimiento'
-          AND EXTRACT(MONTH FROM p.fecha_vencimiento) = ${Prisma.raw(mesActual.toString())}
-          AND EXTRACT(YEAR FROM p.fecha_vencimiento) = ${Prisma.raw(anioActual.toString())}
+          AND p.fecha_vencimiento >= ${fechaInicio}::date
+          AND p.fecha_vencimiento <= ${fechaFin}::date
           AND r.activo = true
         ORDER BY d.numero
       `
@@ -124,6 +129,9 @@ router.get('/pagos-mantenimiento/resumen-anual', async (req, res) => {
     const { anio } = req.query;
     const anioActual = anio ? parseInt(anio) : new Date().getFullYear();
 
+    const fechaInicio = `${anioActual}-01-01`;
+    const fechaFin = `${anioActual + 1}-01-01`;
+
     const resumenMensual = await prisma.$queryRaw(
       Prisma.sql`
         SELECT 
@@ -136,7 +144,8 @@ router.get('/pagos-mantenimiento/resumen-anual', async (req, res) => {
           SUM(CASE WHEN p.estado = 'pagado' THEN p.monto ELSE 0 END) as monto_pagado
         FROM pagos p
         WHERE p.tipo_pago = 'mantenimiento'
-          AND EXTRACT(YEAR FROM p.fecha_vencimiento) = ${Prisma.raw(anioActual.toString())}
+          AND p.fecha_vencimiento >= ${fechaInicio}::date
+          AND p.fecha_vencimiento < ${fechaFin}::date
         GROUP BY EXTRACT(MONTH FROM p.fecha_vencimiento)::integer
         ORDER BY mes
       `
