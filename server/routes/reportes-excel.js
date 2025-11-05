@@ -49,8 +49,8 @@ router.get('/pagos-mantenimiento', async (req, res) => {
         END as estado_detallado,
         CASE 
           WHEN p.fecha_pago IS NOT NULL 
-          THEN EXTRACT(DAY FROM (p.fecha_pago - p.fecha_vencimiento))
-          ELSE EXTRACT(DAY FROM (CURRENT_DATE - p.fecha_vencimiento))
+          THEN (p.fecha_pago - p.fecha_vencimiento)
+          ELSE (CURRENT_DATE - p.fecha_vencimiento)
         END as dias_diferencia
       FROM pagos p
       JOIN departamentos d ON p.departamento_id = d.id
@@ -59,11 +59,9 @@ router.get('/pagos-mantenimiento', async (req, res) => {
       WHERE p.tipo_pago = 'mantenimiento'
         AND p.fecha_vencimiento >= '${fechaInicio}'::date
         AND p.fecha_vencimiento <= '${fechaFin}'::date
-          AND r.activo = true
-        ORDER BY d.numero
-    `);
-
-    // Calcular estadísticas
+        AND r.activo = true
+      ORDER BY d.numero
+    `);    // Calcular estadísticas
     const totalPagos = pagos.length;
     const totalPagados = pagos.filter(p => p.estado === 'pagado').length;
     const totalPendientes = pagos.filter(p => p.estado === 'pendiente').length;
@@ -76,20 +74,30 @@ router.get('/pagos-mantenimiento', async (req, res) => {
     const montoPendiente = montoTotal - montoPagado;
 
     // Formatear datos para Excel
-    const datosExcel = pagos.map(p => ({
-      Departamento: p.departamento,
-      Piso: p.piso,
-      Residente: p.residente,
-      Email: p.email,
-      Teléfono: p.telefono || 'N/A',
-      'Tipo Relación': p.tipo_relacion,
-      Monto: parseFloat(p.monto_mantenimiento).toFixed(2),
-      'Fecha Vencimiento': new Date(p.fecha_vencimiento).toLocaleDateString('es-ES'),
-      'Fecha Pago': p.fecha_pago ? new Date(p.fecha_pago).toLocaleDateString('es-ES') : 'No pagado',
-      Estado: p.estado_detallado,
-      'Método Pago': p.metodo_pago || 'N/A',
-      'Días': p.dias_diferencia || 0
-    }));
+    const datosExcel = pagos.map(p => {
+      // Convertir intervalo a días (dias_diferencia viene como interval de PostgreSQL)
+      let dias = 0;
+      if (typeof p.dias_diferencia === 'object' && p.dias_diferencia !== null) {
+        dias = p.dias_diferencia.days || 0;
+      } else if (typeof p.dias_diferencia === 'number') {
+        dias = p.dias_diferencia;
+      }
+      
+      return {
+        Departamento: p.departamento,
+        Piso: p.piso,
+        Residente: p.residente,
+        Email: p.email,
+        Teléfono: p.telefono || 'N/A',
+        'Tipo Relación': p.tipo_relacion,
+        Monto: parseFloat(p.monto_mantenimiento).toFixed(2),
+        'Fecha Vencimiento': new Date(p.fecha_vencimiento).toLocaleDateString('es-ES'),
+        'Fecha Pago': p.fecha_pago ? new Date(p.fecha_pago).toLocaleDateString('es-ES') : 'No pagado',
+        Estado: p.estado_detallado,
+        'Método Pago': p.metodo_pago || 'N/A',
+        'Días': dias
+      };
+    });
 
     res.json({
       success: true,
