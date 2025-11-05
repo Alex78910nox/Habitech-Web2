@@ -22,7 +22,7 @@ router.get('/pagos-mantenimiento', async (req, res) => {
     const anioActual = anio ? parseInt(anio) : fecha.getFullYear();
 
     // Consulta para obtener todos los pagos de mantenimiento del mes
-    const pagos = await prisma.$queryRawUnsafe(`
+    const pagos = await prisma.$queryRaw`
       SELECT 
         d.numero as departamento,
         d.piso,
@@ -54,7 +54,7 @@ router.get('/pagos-mantenimiento', async (req, res) => {
         AND EXTRACT(YEAR FROM p.fecha_vencimiento) = ${anioActual}
         AND r.activo = true
       ORDER BY d.numero
-    `);
+    `;
 
     // Calcular estadísticas
     const totalPagos = pagos.length;
@@ -122,13 +122,13 @@ router.get('/pagos-mantenimiento/resumen-anual', async (req, res) => {
     const { anio } = req.query;
     const anioActual = anio ? parseInt(anio) : new Date().getFullYear();
 
-    const resumenMensual = await prisma.$queryRawUnsafe(`
+    const resumenMensual = await prisma.$queryRaw`
       SELECT 
-        EXTRACT(MONTH FROM p.fecha_vencimiento) as mes,
-        COUNT(*) as total_pagos,
-        COUNT(CASE WHEN p.estado = 'pagado' THEN 1 END) as pagados,
-        COUNT(CASE WHEN p.estado = 'pendiente' THEN 1 END) as pendientes,
-        COUNT(CASE WHEN p.estado = 'atrasado' THEN 1 END) as atrasados,
+        EXTRACT(MONTH FROM p.fecha_vencimiento)::integer as mes,
+        COUNT(*)::integer as total_pagos,
+        COUNT(CASE WHEN p.estado = 'pagado' THEN 1 END)::integer as pagados,
+        COUNT(CASE WHEN p.estado = 'pendiente' THEN 1 END)::integer as pendientes,
+        COUNT(CASE WHEN p.estado = 'atrasado' THEN 1 END)::integer as atrasados,
         SUM(p.monto) as monto_total,
         SUM(CASE WHEN p.estado = 'pagado' THEN p.monto ELSE 0 END) as monto_pagado
       FROM pagos p
@@ -136,7 +136,7 @@ router.get('/pagos-mantenimiento/resumen-anual', async (req, res) => {
         AND EXTRACT(YEAR FROM p.fecha_vencimiento) = ${anioActual}
       GROUP BY EXTRACT(MONTH FROM p.fecha_vencimiento)
       ORDER BY mes
-    `);
+    `;
 
     res.json({
       success: true,
