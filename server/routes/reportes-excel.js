@@ -1,6 +1,6 @@
 import express from 'express';
 import pkg from '@prisma/client';
-const { PrismaClient } = pkg;
+const { PrismaClient, Prisma } = pkg;
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -22,39 +22,41 @@ router.get('/pagos-mantenimiento', async (req, res) => {
     const anioActual = anio ? parseInt(anio) : fecha.getFullYear();
 
     // Consulta para obtener todos los pagos de mantenimiento del mes
-    const pagos = await prisma.$queryRaw`
-      SELECT 
-        d.numero as departamento,
-        d.piso::integer,
-        u.nombre || ' ' || u.apellido as residente,
-        u.correo as email,
-        u.telefono,
-        r.tipo_relacion::text,
-        p.monto as monto_mantenimiento,
-        p.fecha_vencimiento,
-        p.fecha_pago,
-        p.estado::text,
-        p.metodo_pago::text,
-        CASE 
-          WHEN p.estado = 'pagado' THEN 'PAGADO'
-          WHEN p.fecha_vencimiento < CURRENT_DATE THEN 'ATRASADO'
-          ELSE 'PENDIENTE'
-        END as estado_detallado,
-        CASE 
-          WHEN p.fecha_pago IS NOT NULL 
-          THEN EXTRACT(DAY FROM (p.fecha_pago - p.fecha_vencimiento))::integer
-          ELSE EXTRACT(DAY FROM (CURRENT_DATE - p.fecha_vencimiento))::integer
-        END as dias_diferencia
-      FROM pagos p
-      JOIN departamentos d ON p.departamento_id = d.id
-      JOIN residentes r ON p.residente_id = r.id
-      JOIN usuarios u ON r.usuario_id = u.id
-      WHERE p.tipo_pago = 'mantenimiento'
-        AND EXTRACT(MONTH FROM p.fecha_vencimiento)::integer = ${mesActual}
-        AND EXTRACT(YEAR FROM p.fecha_vencimiento)::integer = ${anioActual}
-        AND r.activo = true
-      ORDER BY d.numero
-    `;
+    const pagos = await prisma.$queryRaw(
+      Prisma.sql`
+        SELECT 
+          d.numero as departamento,
+          d.piso,
+          u.nombre || ' ' || u.apellido as residente,
+          u.correo as email,
+          u.telefono,
+          r.tipo_relacion::text,
+          p.monto as monto_mantenimiento,
+          p.fecha_vencimiento,
+          p.fecha_pago,
+          p.estado::text,
+          p.metodo_pago::text,
+          CASE 
+            WHEN p.estado = 'pagado' THEN 'PAGADO'
+            WHEN p.fecha_vencimiento < CURRENT_DATE THEN 'ATRASADO'
+            ELSE 'PENDIENTE'
+          END as estado_detallado,
+          CASE 
+            WHEN p.fecha_pago IS NOT NULL 
+            THEN EXTRACT(DAY FROM (p.fecha_pago - p.fecha_vencimiento))
+            ELSE EXTRACT(DAY FROM (CURRENT_DATE - p.fecha_vencimiento))
+          END as dias_diferencia
+        FROM pagos p
+        JOIN departamentos d ON p.departamento_id = d.id
+        JOIN residentes r ON p.residente_id = r.id
+        JOIN usuarios u ON r.usuario_id = u.id
+        WHERE p.tipo_pago = 'mantenimiento'
+          AND EXTRACT(MONTH FROM p.fecha_vencimiento) = ${Prisma.raw(mesActual.toString())}
+          AND EXTRACT(YEAR FROM p.fecha_vencimiento) = ${Prisma.raw(anioActual.toString())}
+          AND r.activo = true
+        ORDER BY d.numero
+      `
+    );
 
     // Calcular estadísticas
     const totalPagos = pagos.length;
@@ -122,21 +124,23 @@ router.get('/pagos-mantenimiento/resumen-anual', async (req, res) => {
     const { anio } = req.query;
     const anioActual = anio ? parseInt(anio) : new Date().getFullYear();
 
-    const resumenMensual = await prisma.$queryRaw`
-      SELECT 
-        EXTRACT(MONTH FROM p.fecha_vencimiento)::integer as mes,
-        COUNT(*)::integer as total_pagos,
-        COUNT(CASE WHEN p.estado = 'pagado' THEN 1 END)::integer as pagados,
-        COUNT(CASE WHEN p.estado = 'pendiente' THEN 1 END)::integer as pendientes,
-        COUNT(CASE WHEN p.estado = 'atrasado' THEN 1 END)::integer as atrasados,
-        SUM(p.monto) as monto_total,
-        SUM(CASE WHEN p.estado = 'pagado' THEN p.monto ELSE 0 END) as monto_pagado
-      FROM pagos p
-      WHERE p.tipo_pago = 'mantenimiento'
-        AND EXTRACT(YEAR FROM p.fecha_vencimiento)::integer = ${anioActual}
-      GROUP BY EXTRACT(MONTH FROM p.fecha_vencimiento)::integer
-      ORDER BY mes
-    `;
+    const resumenMensual = await prisma.$queryRaw(
+      Prisma.sql`
+        SELECT 
+          EXTRACT(MONTH FROM p.fecha_vencimiento)::integer as mes,
+          COUNT(*)::integer as total_pagos,
+          COUNT(CASE WHEN p.estado = 'pagado' THEN 1 END)::integer as pagados,
+          COUNT(CASE WHEN p.estado = 'pendiente' THEN 1 END)::integer as pendientes,
+          COUNT(CASE WHEN p.estado = 'atrasado' THEN 1 END)::integer as atrasados,
+          SUM(p.monto) as monto_total,
+          SUM(CASE WHEN p.estado = 'pagado' THEN p.monto ELSE 0 END) as monto_pagado
+        FROM pagos p
+        WHERE p.tipo_pago = 'mantenimiento'
+          AND EXTRACT(YEAR FROM p.fecha_vencimiento) = ${Prisma.raw(anioActual.toString())}
+        GROUP BY EXTRACT(MONTH FROM p.fecha_vencimiento)::integer
+        ORDER BY mes
+      `
+    );
 
     res.json({
       success: true,
