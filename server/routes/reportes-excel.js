@@ -25,16 +25,16 @@ router.get('/pagos-mantenimiento', async (req, res) => {
     const pagos = await prisma.$queryRaw`
       SELECT 
         d.numero as departamento,
-        d.piso,
+        d.piso::integer,
         u.nombre || ' ' || u.apellido as residente,
         u.correo as email,
         u.telefono,
-        r.tipo_relacion,
+        r.tipo_relacion::text,
         p.monto as monto_mantenimiento,
         p.fecha_vencimiento,
         p.fecha_pago,
-        p.estado,
-        p.metodo_pago,
+        p.estado::text,
+        p.metodo_pago::text,
         CASE 
           WHEN p.estado = 'pagado' THEN 'PAGADO'
           WHEN p.fecha_vencimiento < CURRENT_DATE THEN 'ATRASADO'
@@ -42,16 +42,16 @@ router.get('/pagos-mantenimiento', async (req, res) => {
         END as estado_detallado,
         CASE 
           WHEN p.fecha_pago IS NOT NULL 
-          THEN EXTRACT(DAY FROM (p.fecha_pago - p.fecha_vencimiento))
-          ELSE EXTRACT(DAY FROM (CURRENT_DATE - p.fecha_vencimiento))
+          THEN EXTRACT(DAY FROM (p.fecha_pago - p.fecha_vencimiento))::integer
+          ELSE EXTRACT(DAY FROM (CURRENT_DATE - p.fecha_vencimiento))::integer
         END as dias_diferencia
       FROM pagos p
       JOIN departamentos d ON p.departamento_id = d.id
       JOIN residentes r ON p.residente_id = r.id
       JOIN usuarios u ON r.usuario_id = u.id
       WHERE p.tipo_pago = 'mantenimiento'
-        AND EXTRACT(MONTH FROM p.fecha_vencimiento) = ${mesActual}
-        AND EXTRACT(YEAR FROM p.fecha_vencimiento) = ${anioActual}
+        AND EXTRACT(MONTH FROM p.fecha_vencimiento)::integer = ${mesActual}
+        AND EXTRACT(YEAR FROM p.fecha_vencimiento)::integer = ${anioActual}
         AND r.activo = true
       ORDER BY d.numero
     `;
@@ -133,8 +133,8 @@ router.get('/pagos-mantenimiento/resumen-anual', async (req, res) => {
         SUM(CASE WHEN p.estado = 'pagado' THEN p.monto ELSE 0 END) as monto_pagado
       FROM pagos p
       WHERE p.tipo_pago = 'mantenimiento'
-        AND EXTRACT(YEAR FROM p.fecha_vencimiento) = ${anioActual}
-      GROUP BY EXTRACT(MONTH FROM p.fecha_vencimiento)
+        AND EXTRACT(YEAR FROM p.fecha_vencimiento)::integer = ${anioActual}
+      GROUP BY EXTRACT(MONTH FROM p.fecha_vencimiento)::integer
       ORDER BY mes
     `;
 
