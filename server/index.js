@@ -29,6 +29,8 @@ import metricasConsumoRoutes from './routes/metricas-consumo.js';
 import anomaliasDetectadasRoutes from './routes/anomalias-detectadas.js';
 import registrosAccesoRoutes from './routes/registros-acceso.js';
 import chatbotRoutes from './routes/chatbot.js';
+import n8nRoutes from './routes/n8n-integration.js';
+import reportesExcelRoutes from './routes/reportes-excel.js';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -60,6 +62,8 @@ app.use('/api/metricas-consumo', metricasConsumoRoutes);
 app.use('/api/anomalias-detectadas', anomaliasDetectadasRoutes);
 app.use('/api/registros-acceso', registrosAccesoRoutes);
 app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/n8n', n8nRoutes);
+app.use('/api/reportes', reportesExcelRoutes);
 
 // Ruta de prueba
 app.get('/api/health', (req, res) => {
